@@ -3,7 +3,7 @@
 const fs = require('fs');
 const express = require('express');
 const NodeCache = require('node-cache');
-const prometheusClient = require('prom-client');
+const { register, Gauge } = require('prom-client');
 
 
 // Constants
@@ -61,7 +61,7 @@ app.get('/', (request, response) => {
     }
 });
 
-const pingResultsGauge = new prometheusClient.Gauge({ 
+const pingResultsGauge = new Gauge({ 
     name: 'heartbeat_host_up', 
     help: 'Whether host is up or down',
     labelNames: [
@@ -90,8 +90,10 @@ app.get('/metrics', (request, response) => {
             }, ping.up ? 1 : 0)
         });
 
-        prometheusClient.register.metrics().then((value) => {
-            response.send(`<pre>${value}</pre>`);
+        register.metrics().then((value) => {
+            register.resetMetrics();
+            response.set('Content-Type', register.contentType);
+            response.send(`${value}`);
         });
 
     } catch (error) {
