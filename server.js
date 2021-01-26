@@ -45,7 +45,7 @@ app.get('/', (request, response) => {
         const pingResults = getPingResults();
 
         const pingResultsText = pingResults
-            .map((ping) => `${ping.time}: ${ping.name} ${ping.status}${ping.error ? ' (error: ' + ping.error + ')' : ''}`)
+            .map((ping) => `${ping.time}: ${ping.name} ${ping.up ? 'up' : 'down'}${ping.error ? ' (error: ' + ping.error + ')' : ''}`)
             .join('\n')
             ;
         
@@ -65,11 +65,14 @@ app.get('/metrics', (request, response) => {
     try {       
         const pingResults = getPingResults();
         const pingResultsText = pingResults
-            .map((ping) => `uptime_checker{name="${ping.name}",host="${ping.host}",port="${ping.port}",time="${ping.time}",error="${ping.error ? ping.error : ''}"} ${ping.status}`)
+            .map((ping) => `heartbeat_host_up{name="${ping.name}",host="${ping.host}",port="${ping.port}",time="${ping.time}",error="${ping.error ? ping.error : ''}"} ${ping.up ? 1 : 0}`)
             .join('\n')
             ;
         
-        response.send(`<pre>${pingResultsText}</pre>`);
+        response.send(`<pre># HELP heartbeat_host_up Whether host is up or down
+# TYPE heartbeat_host_up gauge
+${pingResultsText}
+</pre>`);
         
     } catch (error) {
         const message = "Server error";

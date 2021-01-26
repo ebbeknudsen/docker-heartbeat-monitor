@@ -5,7 +5,8 @@
   "scripts": {
     "start": "concurrently \"npm run start-server\" \"npm run start-uptime-checker\"",
     "start-server": "node server.js",
-    "start-uptime-checker": "node uptime-checker.js"
+    "start-uptime-checker": "node uptime-checker.js",
+    "create-docker-image": "docker build -t aciied/heartbeat-monitor:0.0.1 ."
   },
   "repository": {
     "type": "git",

@@ -44,7 +44,7 @@ const checkConnection = (host, port, timeout) => {
     
             socket.on('error', (error) => {    
                 clearTimeout(timer);
-                reject(error);
+                reject(error.toString());
             });
         } catch (error) {
             clearTimeout(timer);
@@ -68,12 +68,12 @@ function performPings() {
         var promise = checkConnection(ping.host, ping.port)
             .then(() => {
                 result.time = new Date().toISOString();
-                result.status = "up";
+                result.up = true;
                 succeeded.push(result);
             }, (error) => {
                 result.time = new Date().toISOString();
-                result.status = "down";
-                result.error = error;
+                result.up = false;
+                result.error = error.toString();
                 failed.push(result);
             });    
             
