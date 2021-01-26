@@ -3,7 +3,8 @@
 const fs = require('fs');
 const express = require('express');
 const NodeCache = require('node-cache');
-const nodeCache = new NodeCache();
+const prometheusClient = require('prom-client');
+
 
 // Constants
 const PING_RESULTS_FILE = "ping-results.json";
@@ -17,6 +18,7 @@ const cacheTTL = process.env.CACHE_TTL | 30;
 
 // App
 const app = express();
+const nodeCache = new NodeCache();
 
 function getPingResults() {
 
@@ -59,21 +61,39 @@ app.get('/', (request, response) => {
     }
 });
 
+const pingResultsGauge = new prometheusClient.Gauge({ 
+    name: 'heartbeat_host_up', 
+    help: 'Whether host is up or down',
+    labelNames: [
+        'name',
+        'host',
+        'port',
+        'time',
+        'error'
+    ]
+});
 
 app.get('/metrics', (request, response) => {
     
+
     try {       
         const pingResults = getPingResults();
-        const pingResultsText = pingResults
-            .map((ping) => `heartbeat_host_up{name="${ping.name}",host="${ping.host}",port="${ping.port}",time="${ping.time}",error="${ping.error ? ping.error : ''}"} ${ping.up ? 1 : 0}`)
-            .join('\n')
-            ;
-        
-        response.send(`<pre># HELP heartbeat_host_up Whether host is up or down
-# TYPE heartbeat_host_up gauge
-${pingResultsText}
-</pre>`);
-        
+
+        pingResults.forEach((ping) => {
+
+            pingResultsGauge.set({
+                name: ping.name,
+                host: ping.host,
+                port: ping.port,
+                time: ping.time,
+                error: ping.error ?? ''
+            }, ping.up ? 1 : 0)
+        });
+
+        prometheusClient.register.metrics().then((value) => {
+            response.send(`<pre>${value}</pre>`);
+        });
+
     } catch (error) {
         const message = "Server error";
         console.warn(message, error);
