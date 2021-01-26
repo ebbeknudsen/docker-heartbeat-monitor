@@ -1,0 +1,24 @@
+{
+  "name": "docker-heartbeat-monitor",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "start": "concurrently \"npm run start-server\" \"npm run start-uptime-checker\"",
+    "start-server": "node server.js",
+    "start-uptime-checker": "node uptime-checker.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ebbeknudsen/docker-heartbeat-monitor.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ebbeknudsen/docker-heartbeat-monitor/issues"
+  },
+  "homepage": "https://github.com/ebbeknudsen/docker-heartbeat-monitor#readme",
+  "dependencies": {
+    "concurrently": "^5.3.0",
+    "express": "^4.17.1"
+  }
+}
