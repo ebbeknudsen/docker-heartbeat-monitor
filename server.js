@@ -2,28 +2,41 @@
 
 const fs = require('fs');
 const express = require('express');
-
-const pingResultsFile = "ping-results.json";
-
+const NodeCache = require('node-cache');
+const nodeCache = new NodeCache();
 
 // Constants
+const PING_RESULTS_FILE = "ping-results.json";
+const PING_RESULTS_CACHE_KEY = "PING_RESULTS";
+
 const PORT = 8080;
 const HOST = '0.0.0.0';
+
+const cacheTTL = process.env.CACHE_TTL | 30;
+
 
 // App
 const app = express();
 
 function getPingResults() {
 
-    if(!fs.existsSync(pingResultsFile)) {
-        const errorMessage = pingResultsFile + " doesn't exists";
-        console.warn(errorMessage);
-        return [];
-    }    
+    let results = nodeCache.get(PING_RESULTS_CACHE_KEY);
 
-    const pingResultsRaw = fs.readFileSync(pingResultsFile, 'utf8');
-    const pingResultsJson = JSON.parse(pingResultsRaw);
-    return pingResultsJson.results;
+    if(results == undefined) {
+        console.debug("Ping results not found in cache. Reading from file: " + PING_RESULTS_FILE);
+        if(!fs.existsSync(PING_RESULTS_FILE)) {
+            const errorMessage = PING_RESULTS_FILE + " doesn't exists";
+            console.warn(errorMessage);
+            return [];
+        }
+    
+        const pingResultsRaw = fs.readFileSync(PING_RESULTS_FILE, 'utf8');
+        const pingResultsJson = JSON.parse(pingResultsRaw);
+        results = pingResultsJson.results;
+        nodeCache.set(PING_RESULTS_CACHE_KEY, results, cacheTTL);
+    }
+
+    return results;    
 }
 
 app.get('/', (request, response) => {

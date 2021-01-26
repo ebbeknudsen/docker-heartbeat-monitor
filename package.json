@@ -19,6 +19,7 @@
   "homepage": "https://github.com/ebbeknudsen/docker-heartbeat-monitor#readme",
   "dependencies": {
     "concurrently": "^5.3.0",
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "node-cache": "^5.1.2"
   }
 }

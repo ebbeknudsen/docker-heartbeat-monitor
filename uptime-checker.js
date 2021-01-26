@@ -9,7 +9,7 @@ const pingResultsFile = "ping-results.json";
 
 if(!fs.existsSync(pingsFile)) {
     const errorMessage = pingsFile + " doesn't exists";
-    console.log(errorMessage);
+    console.error(errorMessage);
     throw Error(errorMessage);
 }
 
@@ -18,30 +18,39 @@ const pings = JSON.parse(pingsRaw);
 
 const runEveryMinutes = process.env.RUN_INTERVAL | 1;
 
-function checkConnection(host, port, timeout) {
+const checkConnection = (host, port, timeout) => {
 
     if(!port)
         port = 80;
 
-    return new Promise(function(resolve, reject) {
+    return new Promise((resolve, reject) => {
 
-        timeout = timeout || 2000; // default of 10 seconds
+        timeout = timeout || 2000; // default of 2 seconds
 
-        var timer = setTimeout(function() {
+        let timer = undefined;
+        let socket = undefined;
+
+        timer = setTimeout(() => {
             reject("timeout");
             socket.end();
         }, timeout);
 
-        var socket = net.createConnection(port, host, function() {
+        try {
+            socket = net.createConnection(port, host, () => {   
+                clearTimeout(timer);
+                resolve();
+                socket.end();
+            });
+    
+            socket.on('error', (error) => {    
+                clearTimeout(timer);
+                reject(error);
+            });
+        } catch (error) {
             clearTimeout(timer);
-            resolve();
-            socket.end();
-        });
-
-        socket.on('error', function(err) {
-            clearTimeout(timer);
-            reject(err);
-        });
+            reject(error.toString());
+        }
+        
     });
 }
 
@@ -91,6 +100,7 @@ function runPings() {
     performPings()
         .then(() => {
             setTimeout(runPings, 1000 * 60 * runEveryMinutes);
+            // setTimeout(runPings, 1000 * 10);
         }, (error) => {
             console.error(`${new Date().toISOString()}: Error running pings: ${error}`);
         });
