@@ -74,7 +74,6 @@ const pingResultsGauge = new Gauge({
 });
 
 app.get('/metrics', (request, response) => {
-    
 
     try {       
         const pingResults = getPingResults();

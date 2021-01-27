@@ -16,7 +16,7 @@ if(!fs.existsSync(pingsFile)) {
 const pingsRaw = fs.readFileSync(pingsFile);
 const pings = JSON.parse(pingsRaw);
 
-const runEveryMinutes = process.env.RUN_INTERVAL | 1;
+const runEverySeconds = process.env.RUN_INTERVAL | 60;
 
 const checkConnection = (host, port, timeout) => {
 
@@ -92,14 +92,14 @@ function performPings() {
     });
 }
 
-console.log(`${new Date().toISOString()}: Starting uptime-checker, checking every ${runEveryMinutes} minutes.`);
+console.log(`${new Date().toISOString()}: Starting uptime-checker, checking every ${runEverySeconds} seconds.`);
 
 
 function runPings() {
 
     performPings()
         .then(() => {
-            setTimeout(runPings, 1000 * 60 * runEveryMinutes);
+            setTimeout(runPings, 1000 * runEverySeconds);
             // setTimeout(runPings, 1000 * 10);
         }, (error) => {
             console.error(`${new Date().toISOString()}: Error running pings: ${error}`);
