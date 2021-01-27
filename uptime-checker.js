@@ -16,7 +16,7 @@ if(!fs.existsSync(pingsFile)) {
 const pingsRaw = fs.readFileSync(pingsFile);
 const pings = JSON.parse(pingsRaw);
 
-const runEverySeconds = process.env.RUN_INTERVAL | 60;
+const runEverySeconds = process.env.RUN_INTERVAL | 10;
 
 const checkConnection = (host, port, timeout) => {
 
@@ -65,16 +65,23 @@ function performPings() {
         const result = {
             ...ping
         };
+        const startTime = new Date();
         var promise = checkConnection(ping.host, ping.port)
             .then(() => {
-                result.time = new Date().toISOString();
+                const endTime = new Date();
+                result.time = endTime.toISOString();
+                result.duration = endTime.getTime() - startTime.getTime();
                 result.up = true;
                 succeeded.push(result);
+                console.debug("success", result.name, result.host, result.port, result.time, result.duration);
             }, (error) => {
-                result.time = new Date().toISOString();
+                const endTime = new Date();
+                result.time = endTime.toISOString();
+                result.duration = endTime.getTime() - startTime.getTime();
                 result.up = false;
                 result.error = error.toString();
                 failed.push(result);
+                console.debug("fail", result.name, result.host, result.port, result.time, result.duration, result.error);
             });    
             
         promises.push(promise);
