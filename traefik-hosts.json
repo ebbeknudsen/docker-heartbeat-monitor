@@ -1,0 +1,22 @@
+{
+    "baseUrl": "https://traefik-basic.vibyvej65.dk",
+    "authUsername": "basic-auth-username",
+    "authPassword": "basic-auth-password",
+    "hosts": [
+        {
+            "name": "ha.vibyvej65.dk"            
+        },
+        {
+            "name": "oauth.vibyvej65.dk"            
+        },
+        {
+            "name": "bit.vibyvej65.dk"            
+        },
+        {
+            "name": "traefik.vibyvej65.dk"            
+        },
+        {
+            "name": "nonexisting-host.vibyvej65.dk"            
+        }
+    ]   
+}
