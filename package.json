@@ -1,6 +1,6 @@
 {
   "name": "docker-heartbeat-monitor",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "",
   "scripts": {
     "start": "concurrently \"npm run start-server\" \"npm run start-uptime-checker\"",
