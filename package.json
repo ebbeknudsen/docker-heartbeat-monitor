@@ -1,13 +1,13 @@
 {
   "name": "docker-heartbeat-monitor",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "description": "",
   "scripts": {
     "start": "concurrently \"npm run start-server\" \"npm run start-uptime-checker\"",
     "start-server": "node server.js",
     "start-uptime-checker": "node uptime-checker.js",
     "docker-build": "docker build -t ghcr.io/ebbeknudsen/heartbeat-monitor:$npm_package_version -t ghcr.io/ebbeknudsen/heartbeat-monitor:latest .",
-    "docker-push": "docker push -all-tags ghcr.io/ebbeknudsen/heartbeat-monitor"
+    "docker-push": "docker push --all-tags ghcr.io/ebbeknudsen/heartbeat-monitor"
   },
   "repository": {
     "type": "git",
