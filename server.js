@@ -68,8 +68,6 @@ const pingResultsGauge = new Gauge({
         'name',
         'host',
         'port',
-        'time',
-        'error'
     ]
 });
 
@@ -84,8 +82,6 @@ app.get('/metrics', (request, response) => {
                 name: ping.name,
                 host: ping.host,
                 port: ping.port,
-                time: ping.time,
-                error: ping.error ?? ''
             }, ping.up ? 1 : 0)
         });
 
