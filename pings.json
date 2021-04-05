@@ -1,17 +1,35 @@
-[
-    {
-        "name": "ha.example.com",
-        "host": "192.168.1.10",
-        "port": 8123      
+{
+    "traefik": {
+        "baseUrl": "https://traefik-basic.example.com",
+        "authUsername": "basic-auth-username",
+        "authPassword": "basic-auth-password"
     },
-    {
-        "name": "whoami.example.com",
-        "host": "192.168.1.9",
-        "port": 9199      
-    },
-    {
-        "name": "not-up.example.com",
-        "host": "192.168.1.9",
-        "port": 1101     
-    }
-]
+    "pings": [
+        {
+            "name": "ha.example.com",
+            "host": "192.168.1.10",
+            "port": 8123,
+            "traefik": true
+        },
+        {
+            "name": "whoami.example.com",
+            "host": "192.168.1.9",
+            "port": 9199,
+            "traefik": true,
+            "traefikHost": "whoami-traefik.example.com" 
+        },
+        {
+            "name": "not-up.example.com",
+            "host": "192.168.1.9",
+            "port": 1101,
+            "traefik": true,
+            "traefikHost": "not-up.example.com"
+        },
+        {
+            "name": "google.com",
+            "host": "google.com",
+            "port": 80,
+            "traefik": false
+        }
+    ]
+}

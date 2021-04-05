@@ -47,7 +47,7 @@ app.get('/', (request, response) => {
         const pingResults = getPingResults();
 
         const pingResultsText = pingResults
-            .map((ping) => `${ping.time}: ${ping.name} ${ping.up ? 'up' : 'down'}${ping.error ? ' (error: ' + ping.error + ')' : ''}`)
+            .map((ping) => `${ping.time}: ${ping.name} ${ping.up ? 'up' : 'down'}${ping.traefik ? ' (ping: ' + ping.pingUp + ', traefik: ' + ping.traefikUp + ')' : ''}${ping.error ? ' (error: ' + ping.error + ')' : ''}`)
             .join('\n')
             ;
         
@@ -68,6 +68,8 @@ const pingResultsGauge = new Gauge({
         'name',
         'host',
         'port',
+        'traefik',
+        'traefikHost'
     ]
 });
 
@@ -78,11 +80,15 @@ app.get('/metrics', (request, response) => {
 
         pingResults.forEach((ping) => {
 
-            pingResultsGauge.set({
+            const pingMetric = {
                 name: ping.name,
                 host: ping.host,
                 port: ping.port,
-            }, ping.up ? 1 : 0)
+                traefik: ping.traefik,
+                traefikHost: ping.traefik ? ping.traefikHost : ""
+            };
+
+            pingResultsGauge.set(pingMetric, ping.up ? 1 : 0)
         });
 
         register.metrics().then((value) => {
