@@ -8,7 +8,6 @@ const { fail } = require('assert');
 
 const pingsConfigFile = "pings.json";
 const pingResultsFile = "ping-results.json";
-//const traefikHostsFile = "traefik-hosts.json";
 
 if(!fs.existsSync(pingsConfigFile)) {
     const errorMessage = pingsConfigFile + " doesn't exists";
@@ -93,6 +92,36 @@ const performHttpsRequest = (url, port = undefined, timeout, basicAuthName = "",
     return requestPromise;
 };
 
+const addTraefikStatusToResult = (traefikResult, result) => {
+    if(!pingsConfig.traefik || !result.traefik) {
+        return result;
+    }
+
+    const traefikName = result.traefikHost ? result.traefikHost : result.name;
+
+    result.traefikHost = traefikName + " traefik host";
+
+    if(traefikResult.success) {
+        var matchingTraefikHosts = traefikResult.traefikHosts.filter((nameToCheck) => nameToCheck.indexOf(traefikName) > -1);
+
+        if(matchingTraefikHosts.length > 0) {
+            console.debug("successful traefik host", result.name, result.traefikHost);
+            result.traefikUp = true;
+        } else {
+            result.traefikUp = false;
+            result.traefikError = "Traefik host not found"
+        }
+    }
+    else {
+        result.traefikUp = false;
+        result.traefikError = traefikResult.error;
+    }
+
+    result.up = result.pingUp === true && result.traefikUp === true;
+
+    return result;
+};
+
 function performPings() {
     console.log(`${new Date().toISOString()}: Running ${pingsConfig.pings.length} pings`);
 
@@ -144,51 +173,30 @@ function performPings() {
     
                     return result;               
                 })
-                .then((result) => {
-                    if(!pingsConfig.traefik || !ping.traefik) {
-                        return result;
-                    }
-
-                    const traefikName = ping.traefikHost ? ping.traefikHost : ping.name;
-
-                    result.traefikHost = traefikName + " traefik host";
-
-                    if(traefikResult.success) {
-                        var matchingTraefikHosts = traefikResult.traefikHosts.filter((nameToCheck) => nameToCheck.indexOf(traefikName) > -1);
-
-                        if(matchingTraefikHosts.length > 0) {
-                            console.debug("successful traefik host", result.name, result.traefikHost);
-                            result.traefikUp = true;
-                        } else {
-                            result.traefikUp = false;
-                            result.error = "Traefik host not found"
-                        }
-                    }
-                    else {
-                        result.traefikUp = false;
-                        result.error = traefikResult.error;
-                    }
-                
-                    result.up = result.pingUp && result.traefikUp;
-
-                    return result;
+                .then((localResult) => {
+                    localResult = addTraefikStatusToResult(traefikResult, localResult);
+                    return localResult;
                 })
-                .then((result) => {
-                    console.debug("result", result);
+                .then((localResult) => {
+                    console.debug("result", localResult);
 
-                    if(result.up)
-                        succeeded.push(result);
+                    if(localResult.up)
+                        succeeded.push(localResult);
                     else
-                        failed.push(result);
+                        failed.push(localResult);
                     
                 }, (error) => {
                     const endTime = new Date();
                     result.time = endTime.toISOString();
                     result.duration = endTime.getTime() - startTime.getTime();
-                    result.up = false;
-                    result.error = error.toString();
-                    failed.push(result);
-                    console.debug("fail", result.name, result.host, result.port, result.time, result.duration, result.error);
+                    result.pingUp = result.pingUp === true;
+                    result.up = false;                
+
+                    const errorResult = addTraefikStatusToResult(traefikResult, result);
+
+                    errorResult.error = error.toString();
+                    failed.push(errorResult);
+                    console.debug("fail", errorResult);
                 });    
                 
             promises.push(promise);
@@ -222,7 +230,6 @@ function runPings() {
     performPings()
         .then(() => {
             setTimeout(runPings, 1000 * runEverySeconds);
-            // setTimeout(runPings, 1000 * 10);
         }, (error) => {
             console.error(`${new Date().toISOString()}: Error running pings: ${error}`);
         });

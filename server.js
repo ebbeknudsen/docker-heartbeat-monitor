@@ -61,6 +61,21 @@ app.get('/', (request, response) => {
     }
 });
 
+app.get('/json', (request, response) => {
+    
+    try {       
+        const pingResults = getPingResults();
+        
+        response.send(`<pre>${JSON.stringify(pingResults, null, 2)}</pre>`);
+        
+    } catch (error) {
+        const message = "Server error";
+        console.warn(message, error);
+        response.status = 500;
+        response.send(message);
+    }
+});
+
 const pingResultsGauge = new Gauge({ 
     name: 'heartbeat_host_up', 
     help: 'Whether host is up or down',
