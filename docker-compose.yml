@@ -1,0 +1,14 @@
+version: "3.8"
+services:
+  heartbeat-monitor:
+    image: heartbeat-monitor:dev
+    container_name: heartbeat-monitor
+    restart: "no"
+    environment:
+      - RUN_INTERVAL=60   # 60 seconds run interval
+      - CACHE_TTL=30      # 30 seconds cache Time to live
+    ports:
+      - "8080:8080"
+    volumes:
+      - "./pings.json:/pings.json:ro"
+      - "./ping-results.json:/ping-results.json"

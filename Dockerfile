@@ -1,4 +1,4 @@
-FROM node:14-alpine
+FROM node:18-alpine
 
 # Create app directory
 WORKDIR /
@@ -11,11 +11,11 @@ COPY package*.json ./
 # If you are building your code for development
 # RUN npm install
 # If you are building your code for production
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
 # Bundle app source
 COPY . .
 
 EXPOSE 8080
 
-CMD [ "npm", "start" ]
+CMD [ "npm", "run", "start:production" ]

@@ -204,10 +204,17 @@ function performPings() {
 
         return Promise.all(promises).then(() => {
             const resultList = succeeded.concat(failed);
-            const resultJsonString = JSON.stringify({
+            const resultObject = {
                 results: resultList
-            });
-    
+            }
+
+            for (const pingResult of resultObject.results) {
+                resultObject[pingResult.name] = pingResult;
+            }
+
+            const resultJsonString = JSON.stringify(resultObject);
+
+
             fs.writeFileSync(pingResultsFile, resultJsonString);
     
             let traefikHostsString = "";
